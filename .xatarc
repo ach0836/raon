@@ -1,0 +1,7 @@
+{
+  "databaseURL": "https://AN-CHAE-HEON-s-workspace-m2rvm3.us-east-1.xata.sh/db/nnn:main",
+  "codegen": {
+    "output": "src/xata.js",
+    "moduleType": "esm"
+  }
+}
