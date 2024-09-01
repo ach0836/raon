@@ -1,48 +1,31 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useForm } from "react-hook-form";
-import { motion, AnimatePresence } from "framer-motion";
 import { zodResolver } from "@hookform/resolvers/zod";
-import formSchema from "@/schema";
 import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import * as z from "zod";
 
-export default function Home() {
+// 비밀번호만 필요한 로그인 폼 스키마 정의
+const loginSchema = z.object({
+  password: z.string().min(1, "비밀번호를 입력하세요"),
+});
+
+export default function Login() {
   const router = useRouter();
-  const [numApplicant, setNumApplicant] = useState(2);
   const [isFormDisabled, setIsFormDisabled] = useState(false);
 
   const form = useForm({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(loginSchema),
     defaultValues: {
-      time: "",
-      applicant: Array(2).fill({ name: "", number: "" }),
-      reason: "",
-      contact: "",
-      applicantNum: "2",
+      password: "",
     },
   });
 
@@ -53,7 +36,7 @@ export default function Home() {
         height: "100px",
       },
       position: "top-center",
-      autoClose: 3000, // 3초 동안 표시
+      autoClose: 3000,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,
@@ -70,7 +53,7 @@ export default function Home() {
     setIsFormDisabled(true);
 
     try {
-      const response = await fetch("/api/requests", {
+      const response = await fetch("/api/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -79,121 +62,53 @@ export default function Home() {
       });
 
       if (response.ok) {
-        showToast("제출되었습니다.", "success");
+        showToast("로그인 성공", "success");
+        router.push("/dashboard"); // 로그인 성공 시 대시보드로 리디렉션
       } else {
-        throw new Error("Submission failed");
+        throw new Error("로그인 실패");
       }
     } catch (error) {
-      console.error("Error submitting data:", error);
-      showToast("제출 실패", "error");
+      console.error("Error logging in:", error);
+      showToast("로그인 실패", "error");
     }
   };
 
-  const handleApplicantNumChange = (value) => {
-    setNumApplicant(parseInt(value));
+  const handleNumberClick = (number) => {
+    const currentPassword = form.getValues("password");
+    form.setValue("password", currentPassword + number);
   };
 
-  useEffect(() => {
-    form.setValue("applicant", Array(numApplicant).fill({ name: "", number: "" }));
-  }, [numApplicant, form]);
+  const handleBackspaceClick = () => {
+    const currentPassword = form.getValues("password");
+    form.setValue("password", currentPassword.slice(0, -1));
+  };
 
   const { isSubmitting } = form.formState;
 
   return (
-    <main className="grid justify-items-center items-center w-full min-h-full">
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <Card className="min-w-screen grid justify-items-center items-center p-8 m-12 min-h-96">
-          <Form {...form}>
-            <form
-              className="w-full h-full flex flex-col items-center justify-center"
-              onSubmit={form.handleSubmit(onSubmit)}
-            >
-              <Label className="text-xl mb-4">순자증 신청</Label>
+    <main className="flex justify-center items-center w-screen h-screen bg-gray-100">
+      <Card className="w-full max-w-xl p-8 m-12 min-h-[400px] flex flex-col justify-center items-center">
+        <Form {...form}>
+          <form
+            className="w-full h-full flex flex-col items-center justify-center"
+            onSubmit={form.handleSubmit(onSubmit)}
+          >
+            <Label className="text-2xl mb-4">로그인</Label>
+            <div className="flex items-start mb-4 w-full">
               <FormField
                 control={form.control}
-                name="time"
+                name="password"
                 render={({ field }) => (
-                  <FormItem className="mb-4 w-full">
-                    <FormLabel htmlFor="time" className="block mb-1">
-                      사용 시간
-                    </FormLabel>
-                    <FormControl>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                        disabled={isSubmitting || isFormDisabled}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="사용 시간" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectGroup>
-                            <SelectLabel>시간</SelectLabel>
-                            <SelectItem value="1">야자 1교시</SelectItem>
-                            <SelectItem value="2">야자 2교시</SelectItem>
-                            <SelectItem value="3">야자 3교시</SelectItem>
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="applicantNum"
-                render={({ field }) => (
-                  <FormItem className="mb-4 w-full">
-                    <FormLabel htmlFor="applicant" className="block mb-1">
-                      사용 인원
-                    </FormLabel>
-                    <FormControl>
-                      <Select
-                        onValueChange={(value) => {
-                          handleApplicantNumChange(value);
-                          field.onChange(value);
-                        }}
-                        defaultValue={field.value}
-                        disabled={isSubmitting || isFormDisabled}
-                      >
-                        <SelectTrigger className="outline-none">
-                          <SelectValue placeholder="사용 인원" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectGroup>
-                            <SelectLabel>인원</SelectLabel>
-                            <SelectItem value="2">2명</SelectItem>
-                            <SelectItem value="3">3명</SelectItem>
-                            <SelectItem value="4">4명</SelectItem>
-                            <SelectItem value="5">5명</SelectItem>
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="reason"
-                render={({ field }) => (
-                  <FormItem className="mb-4 w-full">
-                    <FormLabel htmlFor="reason" className="block mb-1">
-                      사유
+                  <FormItem className="flex-1">
+                    <FormLabel htmlFor="password" className="block mb-1">
+                      비밀번호
                     </FormLabel>
                     <FormControl>
                       <Input
-                        id="reason"
-                        placeholder="사유"
-                        type="text"
-                        className="text-g w-full"
+                        id="password"
+                        placeholder="비밀번호"
+                        type="password"
+                        className="text-lg w-full"
                         {...field}
                         disabled={isSubmitting || isFormDisabled}
                       />
@@ -202,112 +117,46 @@ export default function Home() {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="contact"
-                render={({ field }) => (
-                  <FormItem className="mb-4 w-full">
-                    <Label htmlFor="contact" className="block mb-1">
-                      전화번호 (대표자)
-                    </Label>
-                    <FormControl>
-                      <Input
-                        id="contact"
-                        placeholder="전화번호 (대표자)"
-                        type="tel"
-                        className="text-g w-full"
-                        {...field}
-                        disabled={isSubmitting || isFormDisabled}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <AnimatePresence>
-                {form.watch("applicant").map((_, i) => (
-                  <motion.div
-                    className="flex flex-row mb-4 space-y-0 space-x-2"
-                    key={i}
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 20 }}
-                    transition={{ duration: 0.3 }}
+              <div className="ml-4 grid grid-cols-3 gap-2">
+                {Array.from({ length: 9 }, (_, i) => i + 1).map((number) => (
+                  <Button
+                    key={number}
+                    type="button"
+                    onClick={() => handleNumberClick(number.toString())}
+                    className="text-lg p-2"
+                    disabled={isSubmitting || isFormDisabled}
                   >
-                    <FormField
-                      control={form.control}
-                      name={`applicant[${i}].name`}
-                      render={({ field }) => (
-                        <FormItem className="flex-1">
-                          <Label htmlFor={`name${i}`} className="block mb-1">
-                            {`이름 ${i + 1}${i ? "" : " (대표자)"}`}
-                          </Label>
-                          <FormControl>
-                            <Input
-                              id={`name${i}`}
-                              placeholder={`이름 ${i + 1}${i ? "" : " (대표자)"}`}
-                              type="text"
-                              className="text-g"
-                              {...field}
-                              disabled={isSubmitting || isFormDisabled}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`applicant[${i}].number`}
-                      render={({ field }) => (
-                        <FormItem className="flex-1">
-                          <Label htmlFor={`id${i}`} className="block mb-1">
-                            {`학번 ${i + 1}${i ? "" : " (대표자)"}`}
-                          </Label>
-                          <FormControl>
-                            <Input
-                              id={`id${i}`}
-                              placeholder={`학번 ${i + 1}${i ? "" : " (대표자)"}`}
-                              type="text"
-                              className="text-g"
-                              {...field}
-                              disabled={isSubmitting || isFormDisabled}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </motion.div>
+                    {number}
+                  </Button>
                 ))}
-              </AnimatePresence>
-              <Button
-                type="submit"
-                className="text-lg mt-4"
-                disabled={isSubmitting || isFormDisabled}
-              >
-                제출
-              </Button>
-              <Button
-                type="button"
-                onClick={() => router.push("/status")}
-                className="text-lg mt-4"
-                disabled={isSubmitting || isFormDisabled}
-              >
-                승인 현황
-              </Button>
-              <Button
-                type="button"
-                onClick={() => router.push("/statusfalse")}
-                className="text-lg mt-4"
-                disabled={isSubmitting || isFormDisabled}
-              >
-                거절 현황
-              </Button>
-            </form>
-          </Form>
-        </Card>
-      </motion.div>
+                <Button
+                  type="button"
+                  onClick={() => handleNumberClick("0")}
+                  className="text-lg p-2 col-span-2"
+                  disabled={isSubmitting || isFormDisabled}
+                >
+                  0
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleBackspaceClick}
+                  className="text-lg p-2"
+                  disabled={isSubmitting || isFormDisabled}
+                >
+                  ⌫
+                </Button>
+              </div>
+            </div>
+            <Button
+              type="submit"
+              className="text-lg mt-4"
+              disabled={isSubmitting || isFormDisabled}
+            >
+              로그인
+            </Button>
+          </form>
+        </Form>
+      </Card>
       <ToastContainer />
     </main>
   );
