@@ -31,7 +31,7 @@ const DatabaseClient = buildClient();
 const defaultOptions = {
   databaseURL:
     "https://AN-CHAE-HEON-s-workspace-m2rvm3.us-east-1.xata.sh/db/nnn:main",
-  apiKey: env.API_KEY, // API 키를 환경 변수에서 가져옵니다.
+  apiKey: process.env.API_KEY, // API 키를 환경 변수에서 가져옵니다.
 };
 
 /** @typedef { import('./types').DatabaseSchema } DatabaseSchema */
