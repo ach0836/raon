@@ -27,7 +27,7 @@ const tables = [
 const DatabaseClient = buildClient();
 const defaultOptions = {
   databaseURL:
-    "https://pr-citrate-s-workspace-piheva.ap-southeast-2.xata.sh/db/sunja-approve",
+    "https://AN-CHAE-HEON-s-workspace-m2rvm3.us-east-1.xata.sh/db/nnn:main",
 };
 /** @typedef { import('./types').DatabaseSchema } DatabaseSchema */
 /** @extends DatabaseClient<DatabaseSchema> */
