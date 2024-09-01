@@ -45,6 +45,7 @@
     "@typescript-eslint/eslint-plugin": "^7.16.1",
     "@typescript-eslint/parser": "^7.16.1",
     "@xata.io/cli": "^0.15.15",
+    "autoprefixer": "^10.4.20",
     "eslint": "9.x",
     "eslint-config-next": "^14.2.5",
     "eslint-config-prettier": "^9.1.0",
