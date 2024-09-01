@@ -3,33 +3,29 @@ import pluginJs from "@eslint/js";
 import pluginReactConfig from "eslint-plugin-react/configs/recommended.js";
 import { fixupConfigRules } from "@eslint/compat";
 
-export default [
-  {
-    files: ["**/*.{js,mjs,cjs,jsx}"],
-    languageOptions: {
-      parserOptions: {
-        ecmaFeatures: {
-          jsx: true,
-        },
-      },
-      globals: {
-        ...globals.browser,
-        ...globals.node, // Node.js 환경을 추가
+export default {
+  files: ["**/*.{js,mjs,cjs,jsx}"],
+  languageOptions: {
+    parserOptions: {
+      ecmaFeatures: {
+        jsx: true,
       },
     },
-    ...pluginJs.configs.recommended,
-    ...fixupConfigRules(pluginReactConfig),
-    rules: {
-      "react/react-in-jsx-scope": "off",
-      "react/prop-types": "off",
-    },
-    settings: {
-      react: {
-        version: "detect",
-      },
+    globals: {
+      ...globals.browser,
+      ...globals.node, // Node.js 환경을 추가
     },
   },
-  {
-    ignores: ["src/components/ui"],
+  ...pluginJs.configs.recommended,
+  ...fixupConfigRules(pluginReactConfig),
+  rules: {
+    "react/react-in-jsx-scope": "off",
+    "react/prop-types": "off",
   },
-];
+  settings: {
+    react: {
+      version: "detect",
+    },
+  },
+  ignorePatterns: ["src/components/ui"], // 무시할 경로 설정
+};
